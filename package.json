@@ -9,6 +9,10 @@
       "url": "https://manjul.me"
   },
   "license": "MIT",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/codemadan/live-project-reminder-for-vscode"
+  },
   "engines": {
     "vscode": "^1.96.0"
   },
