@@ -1,26 +1,33 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    // Check if any folder in the workspace ends with "-LIVE"
+    const workspaceFolders = vscode.workspace.workspaceFolders;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "live-project-reminder" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('live-project-reminder.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Live Project Reminder!');
-	});
-
-	context.subscriptions.push(disposable);
+    if (workspaceFolders) {
+        for (const folder of workspaceFolders) {
+            if (folder.name.endsWith('-LIVE')) {
+                showRedBar();
+                break;
+            }
+        }
+    }
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+function showRedBar() {
+    // Create a status bar item
+    const redBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1000);
+    redBar.text = '⚠️ LIVE Environment Detected';
+    redBar.tooltip = 'This folder name ends with "-LIVE". Be cautious!';
+    redBar.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+    redBar.show();
+
+    // Dispose the status bar item when the workspace changes
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+        redBar.dispose();
+    });
+}
+
+export function deactivate() {
+    // Cleanup if needed
+}
