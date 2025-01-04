@@ -33,4 +33,4 @@ MIT
 
 ## Contributing
 
-Feel free to open issues or PRs on the [GitHub repository](https://github.com/codemadan/live-project-reminder).
+Feel free to open issues or PRs on the [GitHub repository](https://github.com/codemadan/live-project-reminder-for-vscode).
