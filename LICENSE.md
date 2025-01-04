@@ -1,4 +1,4 @@
-## TLDR;
+## TL;DR
 ```Do whatever the F**k you like```
 
 MIT License
