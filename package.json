@@ -1,6 +1,6 @@
 {
-  "name": "live-project-reminder",
-  "displayName": "Live Project Reminder",
+  "name": "red-bar",
+  "displayName": "Red Bar",
   "description": "",
   "version": "1.0.0",
   "publisher": "codemadan",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
       "type": "git",
-      "url": "https://github.com/codemadan/live-project-reminder-for-vscode"
+      "url": "https://github.com/codemadan/red-bar-for-vscode"
   },
   "engines": {
     "vscode": "^1.78.0"
@@ -23,7 +23,14 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
-  "contributes": {},
+  "contributes": {
+      "commands": [
+          {
+              "command": "redBar.generateConfig",
+              "title": "Red Bar: Generate Config"
+          }
+      ]
+  },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",

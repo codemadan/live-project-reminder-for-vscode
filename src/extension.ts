@@ -1,59 +1,97 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 let redBar: vscode.StatusBarItem | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-    // Check if any folder in the workspace ends with "-LIVE"
-    const workspaceFolders = vscode.workspace.workspaceFolders;
+    // Register command to generate config file
+    const generateConfigCommand = vscode.commands.registerCommand('redBar.generateConfig', generateConfigFile);
+    context.subscriptions.push(generateConfigCommand);
 
-    if (workspaceFolders) {
-        for (const folder of workspaceFolders) {
-            if (folder.name.endsWith('-LIVE')) {
-                showRedBar();
-                break;
-            }
-        }
-    }
+    // Initial check for live project configuration
+    updateRedBarVisibility();
 
     // Listen for active editor changes
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-        if (editor) {
-            const filePath = editor.document.uri.fsPath;
-            if (isLiveProjectFile(filePath)) {
-                showRedBar();
-            } else {
-                hideRedBar();
-            }
-        }
+    vscode.window.onDidChangeActiveTextEditor(() => {
+        updateRedBarVisibility();
     });
 
-    // Listen for file selection changes in the explorer
-    vscode.window.onDidChangeVisibleTextEditors(editors => {
-        editors.forEach(editor => {
-            const filePath = editor.document.uri.fsPath;
-            if (isLiveProjectFile(filePath)) {
-                showRedBar();
-            } else {
-                hideRedBar();
-            }
-        });
+    // Listen for changes in workspace folders
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+        updateRedBarVisibility();
     });
 }
 
-function isLiveProjectFile(filePath: string): boolean {
-    // Implement logic to determine if the file is part of the live project
-    // This could involve checking the file path against known project directories
-    return filePath.includes('-LIVE'); // Example logic
-}
-
-function showRedBar() {
-    if (!redBar) {
-        // Create a status bar item
-        redBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1000);
-        redBar.text = '⚠️ LIVE Environment Detected || Can be a live project';
-        redBar.tooltip = 'This folder name ends with "-LIVE". Be cautious!';
-        redBar.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+function generateConfigFile() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active editor is open.');
+        return;
     }
+
+    const activeDocumentUri = activeEditor.document.uri;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(activeDocumentUri);
+
+    if (!workspaceFolder) {
+        vscode.window.showErrorMessage('No workspace folder is associated with the active file.');
+        return;
+    }
+
+    const configDirPath = path.join(workspaceFolder.uri.fsPath, '.vscode');
+    const configFilePath = path.join(configDirPath, 'redbar.json');
+    const defaultConfig = {
+        env: "live",
+        showWarning: true,
+        warningMessage: "⚠️ LIVE Environment Detected || Recommended to be cautious",
+    };
+
+    if (!fs.existsSync(configDirPath)) {
+        fs.mkdirSync(configDirPath);
+    }
+
+    fs.writeFileSync(configFilePath, JSON.stringify(defaultConfig, null, 4));
+    vscode.window.showInformationMessage('Live project configuration file created at ' + configFilePath);
+}
+
+function updateRedBarVisibility() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        hideRedBar();
+        return;
+    }
+
+    const activeDocumentUri = activeEditor.document.uri;
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(activeDocumentUri);
+
+    if (!workspaceFolder) {
+        hideRedBar();
+        return;
+    }
+
+    const configFilePath = path.join(workspaceFolder.uri.fsPath, '.vscode', 'redbar.json');
+    if (!fs.existsSync(configFilePath)) {
+        hideRedBar();
+        return;
+    }
+
+    const configContent = fs.readFileSync(configFilePath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    if (config.showWarning) {
+        showRedBar(config.warningMessage);
+    } else {
+        hideRedBar();
+    }
+}
+
+function showRedBar(message: string) {
+    if (!redBar) {
+        redBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1000);
+    }
+    redBar.text = message;
+    redBar.tooltip = 'This is a live project environment warning.';
+    redBar.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
     redBar.show();
 }
 
