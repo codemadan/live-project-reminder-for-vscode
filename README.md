@@ -22,10 +22,11 @@ None at the moment.
 
 ## Release Notes
 
-### 0.0.1
+### 1.0.0
 
 Initial release:
 - Basic functionality to detect and display warning for live projects
+- Detects files opened in Workspace
 
 ## License
 
