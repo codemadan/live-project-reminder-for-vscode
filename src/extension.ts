@@ -41,7 +41,6 @@ function generateConfigFile() {
     const configDirPath = path.join(workspaceFolder.uri.fsPath, '.vscode');
     const configFilePath = path.join(configDirPath, 'redbar.json');
     const defaultConfig = {
-        env: "live",
         showWarning: true,
         warningMessage: "⚠️ LIVE Environment Detected || Recommended to be cautious",
     };
